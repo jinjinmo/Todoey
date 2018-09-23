@@ -10,7 +10,7 @@ import UIKit
 
 class TodoListViewController: UITableViewController{
     
-    let itemArray = ["Find Eggs","Buy Mike","Find Spoon"]
+    var itemArray = ["Find Eggs","Buy Mike","Find Spoon"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,6 +45,44 @@ class TodoListViewController: UITableViewController{
         }
     
     }
+    
+    
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        
+        var textFile = UITextField()
+        
+        //写出警示提醒框
+        let alert = UIAlertController(title: "Add New Todoey Item", message: "", preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
+            
+            //通过提醒框所做出相应的反馈（列表数组需要加载一行，同时页面也需要更新一行）
+            
+            
+            self.itemArray.append(textFile.text!)
+            self.tableView.reloadData()
+            
+        }
+        
+        alert.addTextField { (alertTextField) in
+            
+            alertTextField.placeholder = "Creat new item"
+            textFile = alertTextField
+        }
+        
+        
+        
+        
+        alert.addAction(action)
+        
+        present(alert, animated: true, completion: nil)
+    
+        
+        
+        
+        
+    }
+    
     
     
     
