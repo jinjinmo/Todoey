@@ -11,19 +11,15 @@ import UIKit
 class TodoListViewController: UITableViewController{
     
     var itemArray = [Item]()
+    //通过使用encode保存数据和保密
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     
-    
-    
-      let defaults = UserDefaults.standard //相当新建一个默认对象
+      // 现在不使用默认的，为了确保数据的安全性么 let defaults = UserDefaults.standard //相当新建一个默认对象
     
     override func viewDidLoad() {
         super.viewDidLoad()
-       //通过if语句，规避了一些程序上崩溃的bug（也有可能添加的item没有加入数组里面去）
-        if let  items  = defaults.array(forKey: "TodoListArray") as? [String]{
-
-            itemArray = items
-        }
+      
         
         let newItem = Item()
         newItem.title = "asd"
@@ -37,9 +33,13 @@ class TodoListViewController: UITableViewController{
         newItem3.title = "zxc"
         itemArray.append(newItem3)
         
+        //通过if语句，规避了一些程序上崩溃的bug（也有可能添加的item没有加入数组里面去）
 
+//        if let items = defaults.array(forKey: "TodoListArray") as? [Item]{
+//            itemArray = items
+//        }
         
-        
+        loadItem()
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -73,8 +73,8 @@ class TodoListViewController: UITableViewController{
         tableView.deselectRow(at: indexPath, animated: true)
         //检验没每一行是否已经勾选
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
-        //更新加载页面，从而使得数据更新
-        tableView.reloadData()
+        //更新加载页面，从而使得数据更新  tableView.reloadData()
+         self.saveItem()
     }
     
     
@@ -95,10 +95,9 @@ class TodoListViewController: UITableViewController{
           //通过提醒框所做出相应的反馈（列表数组需要加载一行，同时页面也需要更新一行）
             self.itemArray.append(newItem)
             
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")//对象的直接调用
-          
-            self.tableView.reloadData()
-            
+            // 因为不用默认了，所以暂时不需呀的。 self.defaults.set(self.itemArray, forKey: "TodoListArray")//对象的直接调用
+
+            self.saveItem()
         }
         
         alert.addTextField { (alertTextField) in
@@ -107,21 +106,40 @@ class TodoListViewController: UITableViewController{
             textFile = alertTextField
         }
         
-        
-        
-        
+   
         alert.addAction(action)
         
         present(alert, animated: true, completion: nil)
+       
+    }
     
+    func saveItem(){
+        let encoder = PropertyListEncoder()//建立编码器的永久储存，也就是plist
+        //do catch语句是为了测试一下是否可以调用的
+        do{
+            let data = try encoder.encode(self.itemArray)//如果出错可能是没有在item添加协议
+            try  data.write(to: self.dataFilePath!)
+            
+        }catch{
+            print("Error encoding item array,\(error)")
+        }
         
-        
-        
+        self.tableView.reloadData()
         
     }
     
     
-    
+    func loadItem(){
+        if let data = try? Data(contentsOf: dataFilePath!) {
+             let decoder = PropertyListDecoder()
+            do{
+                itemArray = try decoder.decode([Item].self, from: data)
+                
+            }catch{
+                print("Error decoding item array,\(error)")
+            }
+        }
+    }
     
 }
 
